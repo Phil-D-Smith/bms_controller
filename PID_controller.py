@@ -7,27 +7,30 @@ import time
 class PID_controller:
 
     def __init__(self, P=0.2, I=0.0, D=0.0):
-
+        # default coefficients
         self.Kp = P
         self.Ki = I
         self.Kd = D
 
         self.sample_time = 0.00
+        # get time for this loop
         self.current_time = time.time()
+        # save last time this loop ran
         self.last_time = self.current_time
 
+        # clears
         self.clear()
 
     def clear(self):
         """Clears PID computations and coefficients"""
-        self.SetPoint = 0.0
+        self.setpoint = 0.0
 
-        self.PTerm = 0.0
-        self.ITerm = 0.0
-        self.DTerm = 0.0
+        self.P_term = 0.0
+        self.I_term = 0.0
+        self.D_term = 0.0
         self.last_error = 0.0
 
-        # Windup Guard
+        # "windup guard" - prevent values (especially I) getting too big
         self.int_error = 0.0
         self.max = 20.0
 
@@ -41,30 +44,30 @@ class PID_controller:
            :align:   center
            Test PID with Kp=1.2, Ki=1, Kd=0.001 (test_pid.py)
         """
-        error = self.SetPoint - feedback_value
+        error = self.setpoint - feedback_value
 
         self.current_time = time.time()
         delta_time = self.current_time - self.last_time
         delta_error = error - self.last_error
 
         if (delta_time >= self.sample_time):
-            self.PTerm = self.Kp * error
-            self.ITerm += error * delta_time
+            self.P_term = self.Kp * error
+            self.I_term += error * delta_time
 
-            if (self.ITerm < -self.max):
-                self.ITerm = -self.max
-            elif (self.ITerm > self.max):
-                self.ITerm = self.max
+            if (self.I_term < -self.max):
+                self.I_term = -self.max
+            elif (self.I_term > self.max):
+                self.I_term = self.max
 
-            self.DTerm = 0.0
+            self.D_term = 0.0
             if delta_time > 0:
-                self.DTerm = delta_error / delta_time
+                self.D_term = delta_error / delta_time
 
             # Remember last time and last error for next calculation
             self.last_time = self.current_time
             self.last_error = error
 
-            self.output = self.PTerm + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
+            self.output = self.P_term + (self.Ki * self.I_term) + (self.Kd * self.D_term)
 
     def setKp(self, proportional_gain):
         """Set points"""
