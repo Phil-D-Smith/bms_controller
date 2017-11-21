@@ -1,6 +1,4 @@
 
-
-
 import time
 
 
@@ -21,8 +19,9 @@ class PID_controller:
         # clears
         self.clear()
 
+    # clear all outputs
     def clear(self):
-        """Clears PID computations and coefficients"""
+        # clears PID computations and coefficients
         self.setpoint = 0.0
 
         self.P_term = 0.0
@@ -32,18 +31,18 @@ class PID_controller:
 
         # "windup guard" - prevent values (especially I) getting too big
         self.int_error = 0.0
-        self.max = 20.0
+        self.max_gain = 20.0
 
         self.output = 0.0
 
+    # update outputs
     def update(self, feedback_value):
-        """Calculates PID value for given reference feedback
-        .. math::
-            u(t) = K_p e(t) + K_i \int_{0}^{t} e(t)dt + K_d {de}/{dt}
-        .. figure:: images/pid_1.png
-           :align:   center
-           Test PID with Kp=1.2, Ki=1, Kd=0.001 (test_pid.py)
-        """
+
+        # test PID with Kp=1.2, Ki=1, Kd=0.001 (test_pid.py)
+        if not (self.setpoint):
+            print("no setpoint")
+            return -1
+
         error = self.setpoint - feedback_value
 
         self.current_time = time.time()
@@ -54,44 +53,56 @@ class PID_controller:
             self.P_term = self.Kp * error
             self.I_term += error * delta_time
 
-            if (self.I_term < -self.max):
-                self.I_term = -self.max
-            elif (self.I_term > self.max):
-                self.I_term = self.max
+            if (self.I_term < -self.max_gain):
+                self.I_term = -self.max_gain
+            elif (self.I_term > self.max_gain):
+                self.I_term = self.max_gain
 
             self.D_term = 0.0
-            if delta_time > 0:
+            if (delta_time > 0):
                 self.D_term = delta_error / delta_time
 
-            # Remember last time and last error for next calculation
+            # remember last time and last error for next calculation
             self.last_time = self.current_time
             self.last_error = error
 
             self.output = self.P_term + (self.Ki * self.I_term) + (self.Kd * self.D_term)
 
-    def setKp(self, proportional_gain):
-        """Set points"""
-        self.Kp = proportional_gain
+    # set setpoint and log time it was last set
+    def set_setpoint(self, setpoint, max_time=0):
+        self.setpoint = setpoint
+        self.setpoint_time = time.time()
+        self.max_time = max_time
 
-    def setKi(self, integral_gain):
-        self.Ki = integral_gain
+    # set gains
+    def set_Kp(self, P):
+        self.Kp = P
 
-    def setKd(self, derivative_gain):
-        self.Kd = derivative_gain
+    def set_Ki(self, I):
+        self.Ki = I
 
-    def setMax(self, max):
-    
-        self.max_point = max
+    def set_Kd(self, D):
+        self.Kd = D
 
-    def setSampleTime(self, sample_time):
-        """PID that should be updated at a regular interval.
-        Based on a pre-determined sampe time, the PID decides if it should compute or return immediately.
-        """
+    # set max gain
+    def set_max(self, max_gain):
+        self.max_point = max_gain
+
+    # set sample time
+    def set_sample_time(self, sample_time):
         self.sample_time = sample_time
-        
-    def getError(self, last_error):
-        
+
+    # get last calculated setpoint error
+    def get_error(self, last_error):
         self.last_error = last_error
+        return last_error
         
-        
-    
+    # check error against limits to check value isnt drifting due to hardware failure
+    def check_error_limit(self, error_limit, max_time):
+        # if max settling time has been passed
+        if (time.time() > (self.setpoint_time + self.max_time):
+            # and error is outside limits
+            if (self.last_error < error_limit and self.last_error > -error_limit):
+                print("setpoint error limit reached")
+                return
+
