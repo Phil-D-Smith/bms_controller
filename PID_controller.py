@@ -69,7 +69,7 @@ class PID_controller:
             self.output = self.P_term + (self.Ki * self.I_term) + (self.Kd * self.D_term)
 
     # set setpoint and log time it was last set
-    def set_setpoint(self, setpoint, max_time=0):
+    def set_setpoint(self, setpoint, max_time=1000000):
         self.setpoint = setpoint
         self.setpoint_time = time.time()
         self.max_time = max_time
@@ -98,7 +98,7 @@ class PID_controller:
         return last_error
         
     # check error against limits to check value isnt drifting due to hardware failure
-    def check_error_limit(self, error_limit, max_time):
+    def check_error_limit(self, error_limit):
         # if max settling time has been passed and error is outside limits
         if (time.time() > (self.setpoint_time + self.max_time) and (self.last_error < error_limit) and (self.last_error > -error_limit)):
             print("setpoint error limit reached")
