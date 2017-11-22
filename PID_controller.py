@@ -100,7 +100,8 @@ class PID_controller:
     # check error against limits to check value isnt drifting due to hardware failure
     def check_error_limit(self, error_limit):
         # if max settling time has been passed and error is outside limits
-        if (time.time() > (self.setpoint_time + self.max_time) and (self.last_error < error_limit) and (self.last_error > -error_limit)):
+        if (time.time() > (self.setpoint_time + self.max_time) and 
+            ((self.last_error > error_limit) or (self.last_error < -error_limit))):
             print("setpoint error limit reached")
             return False
         else:
