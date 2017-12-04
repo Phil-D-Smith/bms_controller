@@ -67,6 +67,7 @@ class PID_controller:
             self.last_error = error
 
             self.output = self.P_term + (self.Ki * self.I_term) + (self.Kd * self.D_term)
+            return self.output
 
     # set setpoint and log time it was last set
     def set_setpoint(self, setpoint, max_time=1000000):
